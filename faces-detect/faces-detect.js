@@ -1,3 +1,122 @@
+// cvが読み込まれたときに実行
+// cvのinitialize待ち
+function onCvLoaded() {
+    console.log('on OpenCV.js Loaded', cv);
+    
+    cv.onRuntimeInitialized = onCVReady();
+}
+
+// cvがInitializeされたときに実行
+// DOMContentLoaded待ち
+function onCVReady() {
+    console.log("onCVReady");
+
+    window.addEventListener('DOMContentLoaded', function(){
+        document.getElementById("download").onclick = (event) => {
+            let canvas = document.getElementById("virtual_canvas");
+        
+            let link = document.createElement("a");
+            link.href = canvas.toDataURL("image/png");
+            link.download = "test.png";
+            link.click();
+        }
+
+        loadCascade();
+    });
+}
+
+// DOMContentLoaded完了後
+// 特徴分類器の読み込み
+function loadCascade() {
+    // cascadeファイルの読み込み
+    let faceCascade = new cv.CascadeClassifier();
+
+    // ファイル入力
+    let fileInput = document.getElementById('fileInput');
+
+    // 学習済みデータの読み込み
+    // xmlファイルを読み込むので、utilsで読み込んでからcascadeを読み込む必要あり
+    faceCascadeFile = './haarcascade_frontalface_default.xml';
+    const utils = new Utils('error-message');
+    utils.createFileFromUrl(faceCascadeFile, faceCascadeFile, () => {
+        faceCascade.load(faceCascadeFile);
+    });
+        
+    // ファイル読み込み完了時の動作
+    fileInput.onchange = (e) => {
+        onCascadeFileLoaded(cv, e, faceCascade);
+    };
+}
+
+// 学習済みデータ読込完了後
+// 入力画像の読み込みを行う
+function onCascadeFileLoaded(cv, e, faceCascade) {
+    // 画像読み込み準備
+    const image = new Image();
+    image.src = URL.createObjectURL(e.target.files[0]);
+
+    image.onload = ()  => {
+        detect(cv, image, faceCascade);
+    }
+}
+
+// 入力画像の読み込み完了後
+// 入力画像より顔検出を行い、顔領域を赤枠で囲む
+function detect(cv, image, faceCascade) {
+    // 画像をcanvas_inputキャンバスに読み込み
+    drawMap(image)
+            
+    // 読み込み完了後：
+    // canvas_inputキャンバスからopencvに読み込み
+    let cvImage = cv.imread("canvas_input");
+    let img_width = cvImage.cols;
+    let img_height = cvImage.rows;
+
+    // グレースケール化
+    let gray = new cv.Mat();
+    cv.cvtColor(cvImage, gray, cv.COLOR_RGBA2GRAY, 0);
+    
+    // 顔検出
+    let faces = new cv.RectVector();
+    let msize = new cv.Size(0, 0);
+    faceCascade.detectMultiScale(gray, faces, 1.1, 3, 0, msize, msize);
+
+    // 検出した領域に赤枠を表示
+    for (let i = 0; i < faces.size(); ++i) {
+        let point1 = new cv.Point(faces.get(i).x, faces.get(i).y);
+        let point2 = new cv.Point(faces.get(i).x + faces.get(i).width, faces.get(i).y + faces.get(i).height);
+        cv.rectangle(cvImage, point1, point2, [255, 0, 0, 255], 2);
+    }
+
+    // 顔検出結果をcanvas_outputキャンバスに表示
+    // output用のキャンバスも同じサイズにする
+    canvas_output = document.querySelector('#canvas_output');
+    ctx_output = canvas_output.getContext('2d');
+    canvas_output.width = img_width;
+    canvas_output.height = img_height;
+    canvas_output.style.width = img_width + "px";
+    canvas_output.style.height = img_height + "px";
+
+    cv.imshow("canvas_output", cvImage);
+
+    // 仮想キャンバスにも適用（ダウンロード用; サイズは元画像と同じ）
+    let virtualImage = cv.imread("virtual_canvas");
+    virtual_canvas = document.querySelector('#virtual_canvas');
+    for (let i = 0; i < faces.size(); ++i) {
+        let point1 = new cv.Point(faces.get(i).x * (virtual_canvas.width / img_width), faces.get(i).y * (virtual_canvas.height / img_height));
+        let point2 = new cv.Point((faces.get(i).x + faces.get(i).width) * (virtual_canvas.width / img_width), (faces.get(i).y + faces.get(i).height) * (virtual_canvas.height / img_height));
+        cv.rectangle(virtualImage, point1, point2, [255, 0, 0, 255]);
+    }
+    cv.imshow("virtual_canvas", virtualImage);
+
+    // メモリ解放
+    cvImage.delete();
+    virtualImage.delete();
+    gray.delete();
+    faces.delete();
+    faceCascade.delete();
+}
+
 // 入力画像の描画処理
 function drawMap(image) {
     // 仮想キャンバスに画像を描画（画像サイズはそのまま）
@@ -46,108 +165,4 @@ function drawMap(image) {
     ctx.canvas.width = width;
     ctx.canvas.height = height;
     ctx.drawImage(image, 0, 0, width, height);
-}
-
-// cvが読み込まれたときに実行
-function onCvLoaded() {
-    console.log('on OpenCV.js Loaded', cv);
-    
-    cv.onRuntimeInitialized = onCVReady();
-}
-
-// cvがInitializeされたときに実行
-function onCVReady() {
-    console.log("onCVReady");
-
-    window.addEventListener('DOMContentLoaded', function(){
-        document.getElementById("download").onclick = (event) => {
-            let canvas = document.getElementById("virtual_canvas");
-        
-            let link = document.createElement("a");
-            link.href = canvas.toDataURL("image/png");
-            link.download = "test.png";
-            link.click();
-        }
-
-        load_cascade();
-    });
-}
-
-// 特徴分類器の読み込み
-function load_cascade() {
-    // cascadeファイルの読み込み
-    let faceCascade = new cv.CascadeClassifier();
-
-    // ファイル入力
-    let fileInput = document.getElementById('fileInput');
-
-    // 学習済みデータの読み込み
-    // xmlファイルを読み込むので、utilsで読み込んでからcascadeを読み込む必要あり
-    faceCascadeFile = './haarcascade_frontalface_default.xml';
-    const utils = new Utils('error-message');
-    utils.createFileFromUrl(faceCascadeFile, faceCascadeFile, () => {
-        faceCascade.load(faceCascadeFile);
-    });
-        
-    // ファイル読み込み完了時の動作
-    fileInput.onchange = (e) => {
-        // 画像読み込み準備
-        const image = new Image();
-        image.src = URL.createObjectURL(e.target.files[0]);
-
-        image.onload = ()  => {
-            // 画像をcanvas_inputキャンバスに読み込み
-            drawMap(image)
-            
-            // 読み込み完了後：
-            // canvas_inputキャンバスからopencvに読み込み
-            let cvImage = cv.imread("canvas_input");
-            let img_width = cvImage.cols;
-            let img_height = cvImage.rows;
-
-            // グレースケール化
-            let gray = new cv.Mat();
-            cv.cvtColor(cvImage, gray, cv.COLOR_RGBA2GRAY, 0);
-            
-            // 顔検出
-            let faces = new cv.RectVector();
-            let msize = new cv.Size(0, 0);
-            faceCascade.detectMultiScale(gray, faces, 1.1, 3, 0, msize, msize);
-
-            // 検出した領域に赤枠を表示
-            for (let i = 0; i < faces.size(); ++i) {
-                let point1 = new cv.Point(faces.get(i).x, faces.get(i).y);
-                let point2 = new cv.Point(faces.get(i).x + faces.get(i).width, faces.get(i).y + faces.get(i).height);
-                cv.rectangle(cvImage, point1, point2, [255, 0, 0, 255], 2);
-            }
-
-            // 顔検出結果をcanvas_outputキャンバスに表示
-            // output用のキャンバスも同じサイズにする
-            canvas_output = document.querySelector('#canvas_output');
-            ctx_output = canvas_output.getContext('2d');
-            canvas_output.width = img_width;
-            canvas_output.height = img_height;
-            canvas_output.style.width = img_width + "px";
-            canvas_output.style.height = img_height + "px";
-
-            cv.imshow("canvas_output", cvImage);
-
-            // 仮想キャンバスにも適用（ダウンロード用; サイズは元画像と同じ）
-            let virtualImage = cv.imread("virtual_canvas");
-            virtual_canvas = document.querySelector('#virtual_canvas');
-            for (let i = 0; i < faces.size(); ++i) {
-                let point1 = new cv.Point(faces.get(i).x * (virtual_canvas.width / img_width), faces.get(i).y * (virtual_canvas.height / img_height));
-                let point2 = new cv.Point((faces.get(i).x + faces.get(i).width) * (virtual_canvas.width / img_width), (faces.get(i).y + faces.get(i).height) * (virtual_canvas.height / img_height));
-                cv.rectangle(virtualImage, point1, point2, [255, 0, 0, 255]);
-            }
-            cv.imshow("virtual_canvas", virtualImage);
-
-            // メモリ解放
-            cvImage.delete();
-            virtualImage.delete();
-            gray.delete();
-            faces.delete();
-            faceCascade.delete();
-        }
-    };
 }
