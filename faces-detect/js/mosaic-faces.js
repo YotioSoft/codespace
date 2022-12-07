@@ -100,7 +100,7 @@ function load_cascade() {
             drawMap(image)
             
             // 読み込み完了後：
-            // img-inputキャンパスからopencvに読み込み
+            // img-inputキャンバスからopencvに読み込み
             let cvImage = cv.imread("img-input");
             let img_width = cvImage.cols;
             let img_height = cvImage.rows;
