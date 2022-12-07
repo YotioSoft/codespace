@@ -1,7 +1,7 @@
 // 入力画像の描画処理
 function drawMap(image) {
     // 仮想キャンバスに画像を描画（画像サイズはそのまま）
-    virtual_canvas = document.querySelector('#virtual-canvas');
+    virtual_canvas = document.querySelector('#virtual_canvas');
     virtual_ctx = virtual_canvas.getContext('2d');
     virtual_canvas.width = image.width;
     virtual_canvas.height = image.height;
@@ -10,7 +10,7 @@ function drawMap(image) {
     /*--------------------------------------------------*/
 
     // 表示用キャンバスに画像を描画（画像サイズは縮小）
-    canvas_input = document.querySelector('#img-input');
+    canvas_input = document.querySelector('#canvas_input');
     scroller_inner = document.querySelector('#canvas-scroller-input-inner');
 
     // リサイズ処理（最大: x=1000, y=1000）
@@ -61,7 +61,7 @@ function onCVReady() {
 
     window.addEventListener('DOMContentLoaded', function(){
         document.getElementById("download").onclick = (event) => {
-            let canvas = document.getElementById("virtual-canvas");
+            let canvas = document.getElementById("virtual_canvas");
         
             let link = document.createElement("a");
             link.href = canvas.toDataURL("image/png");
@@ -96,12 +96,12 @@ function load_cascade() {
         image.src = URL.createObjectURL(e.target.files[0]);
 
         image.onload = ()  => {
-            // 画像をimg-inputキャンバスに読み込み
+            // 画像をcanvas_inputキャンバスに読み込み
             drawMap(image)
             
             // 読み込み完了後：
-            // img-inputキャンバスからopencvに読み込み
-            let cvImage = cv.imread("img-input");
+            // canvas_inputキャンバスからopencvに読み込み
+            let cvImage = cv.imread("canvas_input");
             let img_width = cvImage.cols;
             let img_height = cvImage.rows;
 
@@ -121,26 +121,26 @@ function load_cascade() {
                 cv.rectangle(cvImage, point1, point2, [255, 0, 0, 255], 2);
             }
 
-            // 顔検出結果をimg-outputキャンバスに表示
+            // 顔検出結果をcanvas_outputキャンバスに表示
             // output用のキャンバスも同じサイズにする
-            canvas_output = document.querySelector('#img-output');
+            canvas_output = document.querySelector('#canvas_output');
             ctx_output = canvas_output.getContext('2d');
             canvas_output.width = img_width;
             canvas_output.height = img_height;
             canvas_output.style.width = img_width + "px";
             canvas_output.style.height = img_height + "px";
 
-            cv.imshow("img-output", cvImage);
+            cv.imshow("canvas_output", cvImage);
 
             // 仮想キャンバスにも適用（ダウンロード用; サイズは元画像と同じ）
-            let virtualImage = cv.imread("virtual-canvas");
-            virtual_canvas = document.querySelector('#virtual-canvas');
+            let virtualImage = cv.imread("virtual_canvas");
+            virtual_canvas = document.querySelector('#virtual_canvas');
             for (let i = 0; i < faces.size(); ++i) {
                 let point1 = new cv.Point(faces.get(i).x * (virtual_canvas.width / img_width), faces.get(i).y * (virtual_canvas.height / img_height));
                 let point2 = new cv.Point((faces.get(i).x + faces.get(i).width) * (virtual_canvas.width / img_width), (faces.get(i).y + faces.get(i).height) * (virtual_canvas.height / img_height));
                 cv.rectangle(virtualImage, point1, point2, [255, 0, 0, 255]);
             }
-            cv.imshow("virtual-canvas", virtualImage);
+            cv.imshow("virtual_canvas", virtualImage);
 
             // メモリ解放
             cvImage.delete();
