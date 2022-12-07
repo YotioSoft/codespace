@@ -1,5 +1,5 @@
 // 入力画像の描画処理
-function drawMapEasy(image) {
+function drawMap(image) {
     // 仮想キャンバスに画像を描画（画像サイズはそのまま）
     virtual_canvas = document.querySelector('#virtual-canvas');
     virtual_ctx = virtual_canvas.getContext('2d');
@@ -69,12 +69,12 @@ function onCVReady() {
             link.click();
         }
 
-        onUtilsLoaded();
+        load_cascade();
     });
 }
 
-// utils.jsが読み込まれたときに実行
-function onUtilsLoaded() {
+// 特徴分類器の読み込み
+function load_cascade() {
     // cascadeファイルの読み込み
     let faceCascade = new cv.CascadeClassifier();
 
@@ -97,7 +97,7 @@ function onUtilsLoaded() {
 
         image.onload = ()  => {
             // 画像をimg-inputキャンバスに読み込み
-            drawMapEasy(image)
+            drawMap(image)
             
             // 読み込み完了後：
             // img-inputキャンパスからopencvに読み込み
