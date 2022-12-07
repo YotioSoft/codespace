@@ -9,32 +9,34 @@
     </head>
 
     <body>
-        <header>
-            顔認識
-        </header>
-
-        <div class="summary">
-            opencv.js を用いて画像から顔を認識し、赤枠で囲みます。
-        </div>
-
-        <div class="app-area" id="app-area-id">
-            <div>
-                <input type="file" id="fileInput" name="file" />
+        <div class="contect">
+            <div class="title">
+                顔認識
             </div>
-            <canvas id="virtual-canvas" style="display: none;"></canvas>
-
-            <canvas id="img-input"></canvas>
-            <canvas id="img-output"></canvas>
-            
-            <button id="download">download</button>
+    
+            <div class="summary">
+                opencv.js を用いて画像から顔を認識し、赤枠で囲みます。
+            </div>
+    
+            <div class="app-area" id="app-area-id">
+                <div>
+                    <input type="file" id="fileInput" name="file" />
+                </div>
+                <canvas id="virtual-canvas" style="display: none;"></canvas>
+    
+                <canvas id="img-input"></canvas>
+                <canvas id="img-output"></canvas>
+                
+                <button id="download">download</button>
+            </div>
+    
+            <footer class="footer_class">
+                © YotioSoft 2022
+            </footer>
         </div>
-
-        <footer class="footer_class">
-            © YotioSoft 2022
-        </footer>
-
-        <script src="/js/common.js"></script>
-        <script src="https://docs.opencv.org/3.4.0/opencv.js" onload="onCvLoaded();"></script>
-        <script src="https://docs.opencv.org/3.4.0/utils.js"></script>
     </body>
+
+    <script src="/js/common.js"></script>
+    <script src="https://docs.opencv.org/3.4.0/opencv.js" onload="onCvLoaded();"></script>
+    <script src="https://docs.opencv.org/3.4.0/utils.js"></script>
 </html>
