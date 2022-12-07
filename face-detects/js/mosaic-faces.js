@@ -130,7 +130,7 @@ function onUtilsLoaded() {
             canvas_output.style.width = img_width + "px";
             canvas_output.style.height = img_height + "px";
 
-            cv.imshow("img-input", cvImage);
+            cv.imshow("img-output", cvImage);
 
             // 仮想キャンバスにも適用（ダウンロード用; サイズは元画像と同じ）
             let virtualImage = cv.imread("virtual-canvas");
