@@ -81,11 +81,9 @@ function detect(cv, image, faceCascade) {
     let msize = new cv.Size(0, 0);
     faceCascade.detectMultiScale(gray, faces, 1.1, 3, 0, msize, msize);
 
-    // 検出した領域に赤枠を表示
+    // 検出した領域にモザイクを表示
     for (let i = 0; i < faces.size(); ++i) {
-        let point1 = new cv.Point(faces.get(i).x, faces.get(i).y);
-        let point2 = new cv.Point(faces.get(i).x + faces.get(i).width, faces.get(i).y + faces.get(i).height);
-        cv.rectangle(cvImage, point1, point2, [255, 0, 0, 255], 2);
+        mosaic(cvImage, faces.get(i).x, faces.get(i).y, faces.get(i).width, faces.get(i).height);
     }
 
     // 顔検出結果をcanvas_outputキャンバスに表示
@@ -103,9 +101,8 @@ function detect(cv, image, faceCascade) {
     let virtualImage = cv.imread("virtual_canvas");
     virtual_canvas = document.querySelector('#virtual_canvas');
     for (let i = 0; i < faces.size(); ++i) {
-        let point1 = new cv.Point(faces.get(i).x * (virtual_canvas.width / img_width), faces.get(i).y * (virtual_canvas.height / img_height));
-        let point2 = new cv.Point((faces.get(i).x + faces.get(i).width) * (virtual_canvas.width / img_width), (faces.get(i).y + faces.get(i).height) * (virtual_canvas.height / img_height));
-        cv.rectangle(virtualImage, point1, point2, [255, 0, 0, 255]);
+        mosaic(virtualImage, faces.get(i).x * (virtual_canvas.width / img_width), faces.get(i).y * (virtual_canvas.width / img_width),
+                    faces.get(i).width * (virtual_canvas.width / img_width), faces.get(i).height * (virtual_canvas.width / img_width));
     }
     cv.imshow("virtual_canvas", virtualImage);
 
@@ -165,4 +162,28 @@ function drawMap(image) {
     ctx.canvas.width = width;
     ctx.canvas.height = height;
     ctx.drawImage(image, 0, 0, width, height);
+}
+
+// モザイクをかける
+function mosaic(img, x, y, w, h) {
+    // モザイクをかける領域の切り抜き
+    let roi = img.roi(new cv.Rect(x, y, w, h));
+
+    // 画像の縮小（5x5に）
+    let dst = new cv.Mat();
+    let dsize = new cv.Size(5, 5);
+    cv.resize(roi, dst, dsize, 0, 0, cv.INTER_AREA);
+
+    // 画像の拡大（元のサイズに）
+    let dst2 = new cv.Mat();
+    let dsize2 = new cv.Size(w, h);
+    cv.resize(dst, dst2, dsize2, 0, 0, cv.INTER_CUBIC);
+
+    // モザイクを元画像に貼り付け
+    dst2.copyTo(img.roi(new cv.Rect(x, y, w, h)));
+
+    // 画像の解放
+    roi.delete();
+    dst.delete();
+    dst2.delete();
 }
