@@ -1,0 +1,41 @@
+<html>
+    <head>
+        <meta charset="utf8">
+        <title>顔認識 - YotioSoft CodeSpace</title>
+
+        <link rel="stylesheet" href="/style.css">
+
+		<script src="./faces-detect.js"></script>
+    </head>
+
+    <body>
+        <div class="contect">
+            <div class="title">
+                顔認識
+            </div>
+    
+            <div class="summary">
+                opencv.js を用いて画像から顔を認識し、赤枠で囲みます。
+            </div>
+    
+            <div class="app-area" id="app-area-id">
+                <div>
+                    <input type="file" id="fileInput" name="file" />
+                </div>
+                <canvas id="virtual_canvas" style="display: none;"></canvas>
+    
+                <canvas id="canvas_input"></canvas>
+                <canvas id="canvas_output"></canvas>
+                
+                <button id="download">download</button>
+            </div>
+    
+            <footer class="footer_class">
+                © YotioSoft 2022
+            </footer>
+        </div>
+    </body>
+
+    <script src="./opencv.js" onload="onCvLoaded();"></script>
+    <script src="./utils.js"></script>
+</html>
